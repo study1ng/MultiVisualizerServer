@@ -1,0 +1,4 @@
+repos:
+  - repo: https://github.com/study1ng/mvis-server
+    hook:
+    - id: black
