@@ -2,14 +2,14 @@ from pathlib import Path
 import numpy as np
 from numpy import ndarray
 from io import BytesIO
-from enum import Enum, auto
+from upath import UPath
 
 
-def resolved_path(p: str | Path) -> Path:
-    return Path(p).expanduser().resolve()
+def resolved_path(p: str | UPath) -> Path:
+    return UPath(p).expanduser().resolve()
 
 
-def load(p: str | Path) -> ndarray:
+def load(p: str | UPath) -> ndarray:
     # TODO: choose the appropriate function to load data by p.suffix
     ...
 
@@ -21,11 +21,10 @@ def ndarray2bytes(arr: ndarray) -> bytes:
     return out
 
 
-def all_exist(*paths: Path) -> bool:
+def all_exist(*paths: UPath) -> bool:
     for path in paths:
         if not path.exists():
             return False
-    return True
 
 
 PathOrNone = Path | None

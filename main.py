@@ -2,7 +2,7 @@ import asyncio
 
 from fastapi import FastAPI, Request
 from typing import List
-from pathlib import Path
+from upath import UPath
 from fastapi.responses import JSONResponse, StreamingResponse
 from method.dumbdashboard import DumbDashboardMethod
 from method.normal import Normal
@@ -68,9 +68,9 @@ def preprocess_pth(p):
 @app.get("/{view_method}/")
 async def entry(
     view_method: str,
-    base: Path | None = None,
-    gt: Path | None = None,
-    fn: List[Path] | None = None,
+    base: UPath | None = None,
+    gt: UPath | None = None,
+    fn: List[UPath] | None = None,
 ):
     """entry is for the first phase processing which process view-method to a dict and resolve and validate paths existence"""
     logger.info(
@@ -134,9 +134,9 @@ def get_method(view_method: str) -> tuple[str, Method]:
 
 
 def get_dashboard_method(
-    base: Path | None,
-    gt: Path | None,
-    fn: List[Path],
+    base: UPath | None,
+    gt: UPath | None,
+    fn: List[UPath],
 ) -> DashboardMethod:
     return DumbDashboardMethod()
 

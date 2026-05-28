@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from pathlib import Path
+from upath import UPath
 from numpy import ndarray
 import uuid
 from errors import *
@@ -12,17 +12,17 @@ class Method(ABC):
         return self._hash
 
     @staticmethod
-    def _check(p: Path):
+    def _check(p: UPath):
         if not p.exists():
             raise FileError("unexisting path", payload={"path": p})
 
     @abstractmethod
     def _process(
-        self, base: Path | None, gt: Path | None, fn: list[Path] | None
+        self, base: UPath | None, gt: UPath | None, fn: list[UPath] | None
     ) -> dict[str, ndarray]: ...
 
     def process(
-        self, base: Path | None, gt: Path | None, fn: list[Path] | None
+        self, base: UPath | None, gt: UPath | None, fn: list[UPath] | None
     ) -> dict[str, ndarray]:
         """process
         return: dict[str, ndarray], its key is filename and value is transformed result
@@ -54,5 +54,5 @@ class DashboardMethod(ABC):
 
     @abstractmethod
     def process(
-        self, base: Path | None, gt: Path | None, fn: list[Path] | None
+        self, base: UPath | None, gt: UPath | None, fn: list[UPath] | None
     ) -> dict[str, object]: ...

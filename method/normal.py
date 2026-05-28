@@ -1,7 +1,7 @@
 from errors import ServerError
 from methods_types import Method
 from utils import load
-from pathlib import Path
+from upath import UPath
 
 
 class Normal(Method):
@@ -17,7 +17,7 @@ class Normal(Method):
         if p is None:
             return None
 
-        if not isinstance(p, (Path, str)):
+        if not isinstance(p, (UPath, str)):
             raise ServerError("ServerError: p should be Path or str")
 
         return load(p)

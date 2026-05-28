@@ -6,10 +6,12 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.136.1",
+    "fsspec>=2026.4.0",
     "monai>=1.5.2",
     "nibabel>=5.4.2",
     "opencv-python>=4.13.0.92",
     "torch>=2.11.0",
+    "universal-pathlib>=0.3.10",
     "uvicorn>=0.46.0",
 ]
 
