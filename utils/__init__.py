@@ -2,6 +2,7 @@ from pathlib import Path
 import numpy as np
 from numpy import ndarray
 from io import BytesIO
+from enum import Enum, auto
 
 
 def resolved_path(p: str | Path) -> Path:
@@ -18,3 +19,13 @@ def ndarray2bytes(arr: ndarray) -> bytes:
         np.save(buffer, arr)
         out = buffer.getvalue()
     return out
+
+
+def all_exist(*paths: Path) -> bool:
+    for path in paths:
+        if not path.exists():
+            return False
+    return True
+
+
+PathOrNone = Path | None

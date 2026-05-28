@@ -4,8 +4,10 @@ from fastapi import FastAPI, Request
 from typing import List
 from pathlib import Path
 from fastapi.responses import JSONResponse, StreamingResponse
-from methods import DashboardMethod, Method
-from utils import ndarray2bytes, resolved_path, load
+from method.dumbdashboard import DumbDashboardMethod
+from method.normal import Normal
+from methods_types import DashboardMethod, Method
+from utils import ndarray2bytes, resolved_path
 from errors import *
 import io, json, zipfile, zlib, uuid, logging
 
@@ -50,12 +52,25 @@ async def mvis_error_handler(req: Request, exc: MvisError):
     )
 
 
+def preprocess_pth(p):
+    if p is None:
+        return None
+    p = resolved_path(p)
+    if not p.exists():
+        raise FileError("file not found", payload={"filename": p})
+    if p.suffixes == []:
+        raise FileError(
+            "unable to specify file format due to no ext", payload={"filename": p}
+        )
+    return p
+
+
 @app.get("/{view_method}/")
 async def entry(
     view_method: str,
     base: Path | None = None,
     gt: Path | None = None,
-    fn: List[Path] = [],
+    fn: List[Path] | None = None,
 ):
     """entry is for the first phase processing which process view-method to a dict and resolve and validate paths existence"""
     logger.info(
@@ -64,26 +79,31 @@ async def entry(
 
     view_method = get_method(view_method)
 
-    def preprocess_pth(p):
-        if p is None:
-            return None
-        p = resolved_path(p)
-        if not p.exists():
-            raise FileError("file not found", payload={"filename": p})
-        if p.suffixes == []:
-            raise FileError(
-                "unable to specify file format due to no ext", payload={"filename": p}
-            )
-        return p
-
     base = preprocess_pth(base)
     gt = preprocess_pth(gt)
+    if fn is None:
+        fn = []
     fn = tuple(preprocess_pth(f) for f in fn)
 
-    return str(call(view_method=view_method, base=base, gt=gt, fn=fn))
+    data = view(view_method, base, gt, fn)
+
+    dashboard_method = get_dashboard_method(base, gt, fn)
+    payload: dict = dashboard_method.process(base, gt, fn)
+
+    uid = uuid.uuid4()
+    register_data(uid, data, payload)
+
+    return str(uid)
 
 
-def get_method(view_method: str) -> Method:
+def view(view_method: Method, base, gt, fn):
+    data = view_method.process(base, gt, fn)
+    data: bytes = ndarray2bytes(data)
+    data = zlib.compress(data)
+    return data
+
+
+def get_method(view_method: str) -> tuple[str, Method]:
     out = dict()
     for vm in view_method.split(","):
         for kv in vm.split("=", maxsplit=1):
@@ -94,8 +114,23 @@ def get_method(view_method: str) -> Method:
                 )
             k, v = kv
             out[k] = v
-    # TODO: get appropriate method
-    ...
+    if "ax" not in out:
+        raise InternalError(
+            "ax should be in view-method", payload={"view_method": view_method}
+        )
+    if "process" not in out:
+        raise InternalError(
+            "process should be in view-method", payload={"view_method": view_method}
+        )
+    process = out.pop("process")
+    match process:
+        case "normal":
+            ax = out.pop("ax")
+            if len(out) != 0:
+                raise InternalError("remained parameters", payload={"remain": out})
+            return (ax, Normal())
+        case p:
+            raise InternalError("unimplemented method", payload={"process": p})
 
 
 def get_dashboard_method(
@@ -103,38 +138,7 @@ def get_dashboard_method(
     gt: Path | None,
     fn: List[Path],
 ) -> DashboardMethod:
-    # TODO: get appropriate method
-    ...
-
-
-def call(
-    view_method: Method,
-    base: Path | None,
-    gt: Path | None,
-    fn: List[Path],
-) -> uuid.UUID:
-    """call is a function which call appropriate function based on view_method"""
-    uid = uuid.uuid4()
-    dashboard_method = get_dashboard_method(base, gt, fn)
-    view_method.assert_(base, gt, fn)
-
-    def _load(p):
-        if p is None:
-            return None
-        return load(p)
-
-    lb = _load(base)
-    lg = _load(gt)
-    lf = tuple(map(_load, fn))
-
-    data = view_method.process(lb, lg, lf)
-    data: bytes = ndarray2bytes(data)
-    data = zlib.compress(data)
-
-    payload: dict = dashboard_method.process(lb, lg, lf)
-    register_data(uid, data, payload)
-
-    return uid
+    return DumbDashboardMethod()
 
 
 @app.get("/{uid}.zip")

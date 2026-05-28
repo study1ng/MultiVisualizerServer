@@ -14,3 +14,7 @@ class InternalError(MvisError):
 
 class FileError(MvisError):
     """File Error is a error which occurs if a passed file path is inappropriate"""
+
+
+class ServerError(Exception):
+    """Server Error is an error which occurs if a bug was in server process and not related to client"""
