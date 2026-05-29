@@ -10,6 +10,7 @@ dependencies = [
     "monai>=1.5.2",
     "nibabel>=5.4.2",
     "opencv-python>=4.13.0.92",
+    "orjson>=3.11.9",
     "torch>=2.11.0",
     "universal-pathlib>=0.3.10",
     "uvicorn>=0.46.0",
@@ -17,7 +18,9 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "pre-commit>=4.6.0",
     "pytest>=9.0.3",
+    "pytest-asyncio>=1.4.0",
     "ruff>=0.15.12",
 ]
