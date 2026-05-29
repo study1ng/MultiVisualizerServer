@@ -3,15 +3,31 @@ import numpy as np
 from numpy import ndarray
 from io import BytesIO
 from upath import UPath
+import nibabel
+from errors import *
 
 
 def resolved_path(p: str | UPath) -> Path:
     return UPath(p).expanduser().resolve()
 
 
+def _list_endswith(f: list, e: list) -> bool:
+    return f[-len(e) :] == e
+
+
 def load(p: str | UPath) -> ndarray:
-    # TODO: choose the appropriate function to load data by p.suffix
-    ...
+    """dim=3: channel, saggital, coronal, axial"""
+    p = resolved_path(p)
+    if _list_endswith(p.suffixes, [".nii", ".gz"]) or _list_endswith(
+        p.suffix, [".nii"]
+    ):
+        img = nibabel.load(p)
+        loaded: ndarray = nibabel.as_closest_canonical(img).get_fdata()
+        if len(loaded.shape) == 4:
+            loaded = np.transpose(loaded, [3, 0, 1, 2])
+        return loaded
+    else:
+        raise InternalError("unimplemented load suffix", payload={"path": p})
 
 
 def ndarray2bytes(arr: ndarray) -> bytes:

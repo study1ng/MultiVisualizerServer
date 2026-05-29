@@ -10,6 +10,7 @@ from methods_types import DashboardMethod, Method
 from utils import ndarray2bytes, resolved_path
 from errors import *
 import io, json, zipfile, zlib, uuid, logging
+import numpy as np
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -77,7 +78,7 @@ async def entry(
         f"GET: {view_method}, base: {str(base)}, gt: {str(gt)}, fn: {[str(f) for f in fn]}"
     )
 
-    view_method = get_method(view_method)
+    ax, view_method = get_method(view_method)
 
     base = preprocess_pth(base)
     gt = preprocess_pth(gt)
@@ -85,7 +86,7 @@ async def entry(
         fn = []
     fn = tuple(preprocess_pth(f) for f in fn)
 
-    data = view(view_method, base, gt, fn)
+    data = view(ax, view_method, base, gt, fn)
 
     dashboard_method = get_dashboard_method(base, gt, fn)
     payload: dict = dashboard_method.process(base, gt, fn)
@@ -96,8 +97,15 @@ async def entry(
     return str(uid)
 
 
-def view(view_method: Method, base, gt, fn):
+def view(ax: str, view_method: Method, base, gt, fn):
     data = view_method.process(base, gt, fn)
+    match ax:
+        case "axial":
+            data = data  # cras
+        case "saggital":
+            data = np.transpose(data, (0, 2, 3, 1))  # casr
+        case "coronal":
+            data = np.transpose(data, (0, 1, 3, 2))  # crsa
     data: bytes = ndarray2bytes(data)
     data = zlib.compress(data)
     return data
