@@ -31,6 +31,7 @@ class TestAPI(unittest.TestCase):
         cls.base_data, cls.base_tmp_path = make_random_file(np.float32)
         cls.gt_data, cls.gt_tmp_path = make_random_file(np.uint32)
         cls.fn0_data, cls.fn0_tmp_path = make_random_file(np.uint32)
+        cls.fn1_data, cls.fn1_tmp_path = make_random_file(np.uint32)
 
     @classmethod
     def tearDownClass(cls):
@@ -124,12 +125,12 @@ class TestAPI(unittest.TestCase):
             "ax=axial,process=normal",
             self.base_tmp_path,
             self.gt_tmp_path,
-            [self.fn0_tmp_path],
+            [self.fn0_tmp_path, self.fn1_tmp_path],
         )
         base, gt, fn = data
         np.testing.assert_equal(self.base_data, base)
         np.testing.assert_equal(self.gt_data, gt)
-        np.testing.assert_equal([self.fn0_data], fn)
+        np.testing.assert_equal([self.fn0_data, self.fn1_data], fn)
 
         data, payload = self.follow(
             "ax=axial,process=normal",

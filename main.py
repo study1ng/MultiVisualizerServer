@@ -57,7 +57,7 @@ class AnyJSONResponse(JSONResponse):
 
 @app.exception_handler(MvisError)
 async def mvis_error_handler(req: Request, exc: MvisError):
-    content = {"messages": list(exc.args), **exc.payload}
+    content = {"ty": type(exc).__name__, "messages": list(exc.args), **exc.payload}
 
     logger.error(f"{req.url} {exc.__class__} {content}")
 
