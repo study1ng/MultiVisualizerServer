@@ -47,6 +47,13 @@ class Method(ABC):
 
 
 class DashboardMethod(ABC):
+    CONTINUOUS_GRAPH = "continuous-graph"
+    SCATTER_GRAPH = "scatter-graph"
+    NUMBER = "number"
+    TYPE = "type"
+    RELATED = "related"
+    VALUE = "value"
+
     def __hash__(self):
         if not hasattr("_hash", self):
             self._hash = hash(uuid.uuid4())

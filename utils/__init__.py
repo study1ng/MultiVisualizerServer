@@ -15,12 +15,18 @@ def _list_endswith(f: list, e: list) -> bool:
     return f[-len(e) :] == e
 
 
+def is_nii(p: UPath | str | None):
+    if not p:
+        return None
+    return _list_endswith(p.suffixes, [".nii", ".gz"]) or _list_endswith(
+        p.suffix, [".nii"]
+    )
+
+
 def load(p: str | UPath) -> ndarray:
     """dim=3: channel, saggital, coronal, axial"""
     p = resolved_path(p)
-    if _list_endswith(p.suffixes, [".nii", ".gz"]) or _list_endswith(
-        p.suffix, [".nii"]
-    ):
+    if is_nii(p):
         img = nibabel.load(p)
         loaded: ndarray = nibabel.as_closest_canonical(img).get_fdata()
         if len(loaded.shape) == 4:

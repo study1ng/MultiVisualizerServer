@@ -4,10 +4,11 @@ from fastapi import FastAPI, Query, Request
 from typing import List
 from upath import UPath
 from fastapi.responses import JSONResponse, StreamingResponse
+from method.ctdashboard import CTDashboardMethod
 from method.dumbdashboard import DumbDashboardMethod
 from method.normal import Normal
 from methods_types import DashboardMethod, Method
-from utils import map_dict, ndarray2bytes, resolved_path
+from utils import is_nii, map_dict, ndarray2bytes, resolved_path
 from errors import *
 import io, json, zipfile, zlib, uuid, logging
 import numpy as np
@@ -118,6 +119,8 @@ def entry_logic(
     gt = preprocess_pth(gt)
     if fn is None:
         fn = []
+    if not base and not gt and not fn:
+        raise InternalError("there is no urls passed")
     fn = tuple(preprocess_pth(f) for f in fn)
 
     data = view(ax, view_method, base, gt, fn)
@@ -185,6 +188,13 @@ def get_dashboard_method(
     gt: UPath | None,
     fn: List[UPath],
 ) -> DashboardMethod:
+    bn = is_nii(base)
+    gn = is_nii(gt)
+    fni = all(map(is_nii, fn)) if fn else None
+    nii = bn or gn or fni
+    if nii:
+        return CTDashboardMethod()
+
     return DumbDashboardMethod()
 
 
