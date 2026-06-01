@@ -27,7 +27,7 @@ class Method(ABC):
         """process
         return: dict[str, ndarray], its key is filename and value is transformed result
         """
-        if base is None and gt is None and fn is None:
+        if not base and not gt and not fn:
             raise InternalError("there is nothing passed")
         if base is not None:
             self._check(base)

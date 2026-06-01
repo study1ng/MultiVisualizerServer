@@ -43,4 +43,5 @@ def all_exist(*paths: UPath) -> bool:
             return False
 
 
-PathOrNone = Path | None
+def map_dict(mapper, dic: dict):
+    return {k: mapper(v) for k, v in dic.items()}
