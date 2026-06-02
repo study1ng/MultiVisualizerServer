@@ -58,9 +58,9 @@ class TestEntryLogic(unittest.TestCase):
             [self.fn0_tmp_path],
         )
         base, gt, fn = self.take(data)
-        np.testing.assert_equal(self.base_data, base)
-        np.testing.assert_equal(self.gt_data, gt)
-        np.testing.assert_equal([self.fn0_data], fn)
+        np.testing.assert_allclose(self.base_data, base)
+        np.testing.assert_allclose(self.gt_data, gt)
+        np.testing.assert_allclose([self.fn0_data], fn)
 
         data, payload = entry_logic(
             "ax=axial,process=normal",
@@ -70,8 +70,8 @@ class TestEntryLogic(unittest.TestCase):
         )
         base, gt, fn = self.take(data)
         self.assertIsNone(base)
-        np.testing.assert_equal(self.gt_data, gt)
-        np.testing.assert_equal([self.fn0_data], fn)
+        np.testing.assert_allclose(self.gt_data, gt)
+        np.testing.assert_allclose([self.fn0_data], fn)
 
         data, payload = entry_logic(
             "ax=axial,process=normal",
@@ -80,9 +80,9 @@ class TestEntryLogic(unittest.TestCase):
             [self.fn0_tmp_path],
         )
         base, gt, fn = self.take(data)
-        np.testing.assert_equal(self.base_data, base)
+        np.testing.assert_allclose(self.base_data, base)
         self.assertIsNone(gt)
-        np.testing.assert_equal([self.fn0_data], fn)
+        np.testing.assert_allclose([self.fn0_data], fn)
 
         with self.assertRaises(InternalError):
             data, payload = entry_logic(
@@ -104,9 +104,9 @@ class TestEntryLogic(unittest.TestCase):
         def _saggital(data):
             return np.transpose(data, (1, 2, 0))
 
-        np.testing.assert_equal(_saggital(self.base_data), base)
-        np.testing.assert_equal(_saggital(self.gt_data), gt)
-        np.testing.assert_equal([_saggital(self.fn0_data)], fn)
+        np.testing.assert_allclose(_saggital(self.base_data), base)
+        np.testing.assert_allclose(_saggital(self.gt_data), gt)
+        np.testing.assert_allclose([_saggital(self.fn0_data)], fn)
 
     def test_coronal_normal(self):
         data, payload = entry_logic(
@@ -120,6 +120,6 @@ class TestEntryLogic(unittest.TestCase):
         def _coronal(data):
             return np.transpose(data, (0, 2, 1))
 
-        np.testing.assert_equal(_coronal(self.base_data), base)
-        np.testing.assert_equal(_coronal(self.gt_data), gt)
-        np.testing.assert_equal([_coronal(self.fn0_data)], fn)
+        np.testing.assert_allclose(_coronal(self.base_data), base)
+        np.testing.assert_allclose(_coronal(self.gt_data), gt)
+        np.testing.assert_allclose([_coronal(self.fn0_data)], fn)

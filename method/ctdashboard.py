@@ -59,17 +59,6 @@ class CTDashboardMethod(DashboardMethod):
                 f = fnl[i]
                 related = f"gt&fn{i}"
 
-                def can_cast(a: np.ndarray, d):
-                    return np.allclose(a.astype(d), a)
-
-                if not can_cast(gl, np.uint32) or not can_cast(f, np.uint32):
-                    print(gl.dtype, f.dtype)
-                    raise InternalError(
-                        "a label dtype is not castable to uint32",
-                        payload={"gt": gl.dtype, f"fn{i}": f.dtype},
-                    )
-                gl = gl.astype(np.uint32)
-                f = f.astype(np.uint32)
                 labels = np.unique(list(np.unique(gl)) + list(np.unique(f)))
                 dlabels = {}
                 hlabels = {}

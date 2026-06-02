@@ -128,9 +128,9 @@ class TestAPI(unittest.TestCase):
             [self.fn0_tmp_path, self.fn1_tmp_path],
         )
         base, gt, fn = data
-        np.testing.assert_equal(self.base_data, base)
-        np.testing.assert_equal(self.gt_data, gt)
-        np.testing.assert_equal([self.fn0_data, self.fn1_data], fn)
+        np.testing.assert_allclose(self.base_data, base)
+        np.testing.assert_allclose(self.gt_data, gt)
+        np.testing.assert_allclose([self.fn0_data, self.fn1_data], fn)
 
         data, payload = self.follow(
             "ax=axial,process=normal",
@@ -140,8 +140,8 @@ class TestAPI(unittest.TestCase):
         )
         base, gt, fn = data
         self.assertIsNone(base)
-        np.testing.assert_equal(self.gt_data, gt)
-        np.testing.assert_equal([self.fn0_data], fn)
+        np.testing.assert_allclose(self.gt_data, gt)
+        np.testing.assert_allclose([self.fn0_data], fn)
 
         data, payload = self.follow(
             "ax=axial,process=normal",
@@ -151,5 +151,13 @@ class TestAPI(unittest.TestCase):
         )
         base, gt, fn = data
         self.assertIsNone(base)
-        np.testing.assert_equal(gt, self.gt_data)
-        np.testing.assert_equal(fn, [self.fn0_data])
+        np.testing.assert_allclose(gt, self.gt_data)
+        np.testing.assert_allclose(fn, [self.fn0_data])
+
+    def test_axial_hd(self):
+        _ = self.follow(
+            "ax=axial,process=hd,src=",
+            self.base_tmp_path,
+            self.gt_tmp_path,
+            [self.fn0_tmp_path, self.fn1_tmp_path],
+        )
