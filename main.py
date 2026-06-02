@@ -6,6 +6,7 @@ from upath import UPath
 from fastapi.responses import JSONResponse, StreamingResponse
 from method.ctdashboard import CTDashboardMethod
 from method.dumbdashboard import DumbDashboardMethod
+from method.hd import HD
 from method.normal import Normal
 from methods_types import DashboardMethod, Method
 from utils import is_nii, map_dict, ndarray2bytes, resolved_path
@@ -179,6 +180,12 @@ def get_method(view_method: str) -> tuple[str, Method]:
             if len(out) != 0:
                 raise InternalError("remained parameters", payload={"remain": out})
             return (ax, Normal())
+        case "hd":
+            ax = out.pop("ax")
+            src = out.pop("src", None)
+            if len(out) != 0:
+                raise InternalError("remained parameters", payload={"remain": out})
+            return (ax, HD(src))
         case p:
             raise InternalError("unimplemented method", payload={"process": p})
 
