@@ -23,10 +23,8 @@ def is_nii(p: UPath | str | None):
     )
 
 
-def dice(a: np.ndarray, b: np.ndarray, l: int):
-    return (2 * np.count_nonzero((a == l) == (b == l))) / (
-        np.count_nonzero(a == l) + np.count_nonzero(b == l)
-    )
+def dice(a: np.ndarray, b: np.ndarray):
+    return (2 * np.count_nonzero(a == b)) / (np.count_nonzero(a) + np.count_nonzero(b))
 
 
 def load(p: str | UPath) -> ndarray:

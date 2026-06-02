@@ -5,7 +5,7 @@ import numpy as np
 import scipy.stats
 
 from utils import dice
-from monai.metrics import HausdorffDistanceMetric
+from medpy.metric.binary import hd
 
 
 class CTDashboardMethod(DashboardMethod):
@@ -58,30 +58,40 @@ class CTDashboardMethod(DashboardMethod):
             for i in range(len(fnl)):
                 f = fnl[i]
                 related = f"gt&fn{i}"
-                if not np.issubdtype(gl.dtype, np.integer) or not np.issubdtype(
-                    f, np.integer
-                ):
+
+                def can_cast(a: np.ndarray, d):
+                    return np.allclose(a.astype(d), a)
+
+                if not can_cast(gl, np.uint32) or not can_cast(f, np.uint32):
+                    print(gl.dtype, f.dtype)
                     raise InternalError(
-                        "a label dtype is not integer",
+                        "a label dtype is not castable to uint32",
                         payload={"gt": gl.dtype, f"fn{i}": f.dtype},
                     )
-                labels = np.unique([np.unique(gl), np.unique(f)])
+                gl = gl.astype(np.uint32)
+                f = f.astype(np.uint32)
+                labels = np.unique(list(np.unique(gl)) + list(np.unique(f)))
                 dlabels = {}
                 hlabels = {}
-                hd = HausdorffDistanceMetric(True, reduction="mean-batch")
-                hd(gl, f)
-                h = hd.aggregate()
                 for label in labels:
-                    dlabels[label] = dice(gl, f, label)
-                    hlabels[label] = h[label].item()
-                dlabels["mean"] = np.mean(dlabels.values())
-                dlabels["mean_nobg"] = np.mean(
+                    gf = gl == label
+                    ff = f == label
+                    dlabels[int(label)] = dice(gf, ff)
+                    if gf.any() and ff.any():
+                        hlabels[int(label)] = hd(gf, ff)
+                    else:
+                        hlabels[int(label)] = np.nan
+                dlabels["mean"] = np.nanmean(list(dlabels.values())).item()
+                dlabels["mean_nobg"] = np.nanmean(
                     [v for k, v in dlabels.items() if k != 0]
-                )
-                hlabels["mean"] = np.mean(hlabels.values)
-                hlabels["mean_nobg"] = np.mean(
-                    [v for k, v in hlabels.items() if k != 0]
-                )
+                ).item()
+                hlabels["mean"] = np.nanmean(list(hlabels.values())).item()
+                hlabels["mean_nobg"] = np.nanmean(
+                    [v for k, v in hlabels.items() if k != 0],
+                ).item()
+                for k, v in hlabels.items():
+                    if v is np.nan:
+                        hlabels[k] = None
                 out[f"dice-fn{i}"] = {
                     self.TYPE: self.SCATTER_GRAPH,
                     self.RELATED: related,
